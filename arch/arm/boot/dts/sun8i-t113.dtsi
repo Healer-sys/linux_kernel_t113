@@ -12,6 +12,7 @@
 #include <dt-bindings/reset/sun20i-d1-r-ccu.h>
 #include <dt-bindings/thermal/thermal.h>
 
+
 / {
 	#address-cells = <1>;
 	#size-cells = <1>;
@@ -29,25 +30,29 @@
 		#clock-cells = <0>;
 	};
 
-        cpus {
-                enable-method = "allwinner,sun8iw20p1";
-                #address-cells = <1>;
-                #size-cells = <0>;
+	cpus {
+			enable-method = "allwinner,sun8iw20p1";
+			#address-cells = <1>;
+			#size-cells = <0>;
 
-                cpu0: cpu@0 {
-                        device_type = "cpu";
-                        compatible = "arm,cortex-a7","arm,armv7";
-                        reg = <0x0>;
-                        clocks = <&ccu CLK_CPUX>;
-                };
+			cpu0: cpu@0 {
+					device_type = "cpu";
+					compatible = "arm,cortex-a7","arm,armv7";
+					reg = <0x0>;
+					clocks = <&ccu CLK_CPUX>;
+					clock-frequency = <1200000000>;
+					#cooling-cells = <2>;
+			};
 
-                cpu1: cpu@1 {
-                        device_type = "cpu";
-                        compatible = "arm,cortex-a7","arm,armv7";
-                        reg = <0x1>;
-                        clocks = <&ccu CLK_CPUX>;
-                };
-        };
+			cpu1: cpu@1 {
+					device_type = "cpu";
+					compatible = "arm,cortex-a7","arm,armv7";
+					reg = <0x1>;
+					clocks = <&ccu CLK_CPUX>;
+					clock-frequency = <1200000000>;
+					#cooling-cells = <2>;
+			};
+	};
 
 	timer_arch {
 		compatible = "arm,armv7-timer";
@@ -230,10 +235,10 @@
 			};
 
 			/omit-if-no-ref/
-			uart1_pg8_rts_cts_pins: uart1-pg8-rts-cts-pins {
-				pins = "PG8", "PG9";
-				function = "uart1";
-			};
+			// uart1_pg8_rts_cts_pins: uart1-pg8-rts-cts-pins {
+			// 	pins = "PG8", "PG9";
+			// 	function = "uart1";
+			// };
 
 			can0_pins: can0_pins@0 {
 				pins = "PB2", "PB3";
@@ -319,7 +324,7 @@
 		};
 
 		codec: audio-codec@2030000 {
-			compatible = "allwinner,sun20i-d1-codec", "simple-mfd", "syscon";
+			compatible = "allwinner,sun20i-d1-codec", "simple-mfd";
 			reg = <0x2030000 0x1000>;
 			interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&ccu CLK_BUS_AUDIO>,
@@ -586,7 +591,7 @@
 		};
 
 		syscon: syscon@3000000 {
-			compatible = "allwinner,sun20i-d1-system-control";
+			compatible = "allwinner,sun20i-d1-system-control","syscon";
 			reg = <0x3000000 0x1000>;
 			ranges;
 			#address-cells = <1>;
@@ -903,16 +908,18 @@
 
 		emac: ethernet@4500000 {
 			compatible = "allwinner,sun20i-d1-emac",
-				     "allwinner,sun50i-a64-emac";
+				     	"allwinner,sun50i-a64-emac";
 			reg = <0x4500000 0x10000>;
-			interrupts = <GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>;
-			interrupt-names = "macirq";
+			interrupts = <GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>,
+						 <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>,
+						 <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq", "eth_wake_irq", "eth_lpi";
 			clocks = <&ccu CLK_BUS_EMAC>;
 			clock-names = "stmmaceth";
 			resets = <&ccu RST_BUS_EMAC>;
 			reset-names = "stmmaceth";
 			syscon = <&syscon>;
-			status = "disabled";
+			status = "okay";
 
 			mdio: mdio {
 				compatible = "snps,dwmac-mdio";

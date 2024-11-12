@@ -14,13 +14,20 @@
 	aliases {
 		ethernet0 = &rtl8189fs;
 		mmc0 = &mmc0;
-		serial1 = &uart1;
-		serial5 = &uart5;
+		//serial1 = &uart1;
+		serial3 = &uart3;
+		//serial5 = &uart5;
+		// 加载phy芯片
+		emac0 = &emac;
 	};
 
 	chosen {
-		stdout-path = "serial5:115200n8";
-		bootargs = "mem=128M cma=72M root=/dev/mmcblk0p2 init=/sbin/init rootwait console=tty0 console=ttyS5,115200";
+		stdout-path = "serial3:115200n8";
+		/*
+			bootargs = "mem=128M cma=72M root=/dev/mmcblk0p2 init=/sbin/init rootwait 
+			console=tty0 console=ttyS3,115200 ip=dhcp::eth0:up";
+		*/ 
+		bootargs = "mem=128M root=/dev/mmcblk0p2 init=/sbin/init rootwait console=ttyS3,115200 rw";
 	};
 
 	reg_vcc: vcc {
@@ -95,7 +102,7 @@
 		status_led {
 			linux,default-trigger = "heartbeat";
 			label = "blue:status";
-			gpios = <&pio 3 22 GPIO_ACTIVE_HIGH>;
+			gpios = <&pio 4 12 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
@@ -168,6 +175,10 @@
 	vcc-pf-supply = <&reg_vcc_3v3>;
 	vcc-pg-supply = <&reg_vcc_3v3>;
 
+	uart3_pg8_pins: uart3-pg8-pins {
+		pins = "PG8", "PG9";
+		function = "uart3";
+	};
 
 	uart5_pb4_pins: uart5-pb4-pins {
 	    pins = "PB4", "PB5";
@@ -181,13 +192,19 @@
 
 };
 
-&uart1 {
-        uart-has-rtscts;
-        pinctrl-0 = <&uart1_pg6_pins>, <&uart1_pg8_rts_cts_pins>;
-        pinctrl-names = "default";
-        status = "okay";
+// &uart1 {
+//         uart-has-rtscts;
+//         pinctrl-0 = <&uart1_pg6_pins>, <&uart1_pg8_rts_cts_pins>;
+//         pinctrl-names = "default";
+//         status = "okay";
 
-        /* XR829 bluetooth is connected here */
+//         /* XR829 bluetooth is connected here */
+// };
+
+&uart3 {
+	pinctrl-0 = <&uart3_pg8_pins>;
+	pinctrl-names = "default";
+	status = "okay";
 };
 
 &uart5 {
@@ -268,18 +285,22 @@
 	};
 };
 
-// &codec {
-// 	routing = "Headphone Jack", "HPOUTL",
-// 		  "Headphone Jack", "HPOUTR",
-// 		  "Headset Microphone", "MICIN3"; 
+&codec {
+	routing = "Headphone Jack", "HPOUTL",
+		  "Headphone Jack", "HPOUTR",
+		  "Headset Microphone", "MICIN3"; 
 
-// /*		  "LINEINL", "HPOUTL",
-// 		  "LINEINR", "HPOUTR";
-// */
-// 	widgets = "Microphone", "Headset Microphone",
-// 		  "Headphone", "Headphone Jack";
-// 	status = "disabled";
-// };
+/*		  "LINEINL", "HPOUTL",
+		  "LINEINR", "HPOUTR";
+*/
+	widgets = "Microphone", "Headset Microphone",
+		  "Headphone", "Headphone Jack";
+	status = "okay";
+};
+
+&i2s0 {
+	status = "okay";
+};
 
 &usb_otg {
 	dr_mode = "otg";
@@ -319,20 +340,25 @@
 	status = "okay";
 };
 
-&mdio {
-	ext_rgmii_phy: ethernet-phy@1 {
-		compatible = "ethernet-phy-ieee802.3-c22";
-		reg = <1>;
-	};
-};
-
 &emac {
-	pinctrl-0 = <&rgmii_pe_pins>;
+	pinctrl-0 = <&rmii_pe_pins>;
 	pinctrl-names = "default";
-	phy-handle = <&ext_rgmii_phy>;
-	phy-mode = "rgmii-id";
+	phy-handle = <&ext_rmii_phy>;
+	phy-mode = "rmii";
 	phy-supply = <&reg_vcc_3v3>;
-	status = "disabled";
+	use_ephy25m = <0>;
+	tx-delay = <3>;
+	rx-delay = <0>;
+	phy-rst = <&pio 4 10 GPIO_ACTIVE_HIGH>;
+	mac-address = [00 11 22 33 44 55];
+	status = "okay";
+	
+	mdio {
+		ext_rmii_phy: ethernet-phy@1 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <1>;
+		};
+	};
 };
 
 /*
